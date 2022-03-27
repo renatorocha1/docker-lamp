@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  server:
+    container_name: '${APP_NAME}-server'
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    working_dir: /var/www/html
+    volumes:
+      - ./www:/var/www/html
+      - ./docker/apache:/etc/apache2/sites-enabled
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+    restart: always
+    ports:
+      - '${APP_PORT}:80'
+    depends_on:
+      - db
+    networks:
+      - app
+  db:
+    container_name: '${APP_NAME}-db'
+    image: mariadb:10.5.9
+    restart: always
+    ports:
+      - '${DB_PORT}:80'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+      - ./docker/mysql.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
